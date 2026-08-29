@@ -41,3 +41,11 @@ coverage/
 
 # Cloudflare secrets (create only locally)
 wrangler.secrets.toml
+
+# Ignore Word/LibreOffice documents (PDF is tracked)
+**/*.doc
+**/*.docx
+**/*.odt
+**/*.rtf
+**/~$*.doc*
+**/~$*.xls*
