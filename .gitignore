@@ -1,0 +1,43 @@
+.DS_Store
+Thumbs.db
+node_modules/
+*.log
+.vscode/
+.idea/
+
+# Accidentally-committed Linux/WSL home-directory artifacts.
+# .local/share/pki/nssdb holds NSS certificate databases — never site content.
+.local/
+.sudo_as_admin_successful
+
+# OS / editor
+*.swp
+
+# Wrangler/dev test artifacts
+response.bin
+response_headers.txt
+response_body.bin
+
+# Backups
+*.bak
+tools/serve.mjs.bak
+
+# Temporary files
+*.tmp
+*.temp
+
+# Test coverage (if added later)
+coverage/
+.nyc_output/
+
+# Environment files (never commit secrets)
+.env*
+!.env.example   # allow an example template if you have one
+
+# Config files that may hold tokens
+.npmrc
+.yarnrc
+.pypirc
+
+# Cloudflare secrets (create only locally)
+wrangler.secrets.toml

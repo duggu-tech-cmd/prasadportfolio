@@ -1,0 +1,49 @@
+# ============================================================================
+# Protect binary build artifacts from line-ending conversion.
+# ----------------------------------------------------------------------------
+# On Windows, git's autocrlf can rewrite newline bytes in any file it decides
+# is text. If that ever happened to a Brotli stream or a Unity asset bundle the
+# file would be silently corrupted, and the failure mode is a cryptic
+# "invalid magic number" error in the browser long after the commit.
+#
+# Marking them binary makes that impossible.
+# ============================================================================
+
+# --- pre-compressed web assets ---
+*.br            binary
+*.gz            binary
+
+# --- Unity WebGL build output ---
+*.wasm          binary
+*.data          binary
+*.bundle        binary
+*.unityweb      binary
+*.symbols.json  binary
+
+# --- media ---
+*.png           binary
+*.jpg           binary
+*.jpeg          binary
+*.gif           binary
+*.webp          binary
+*.avif          binary
+*.mp4           binary
+*.webm          binary
+*.pdf           binary
+*.woff          binary
+*.woff2         binary
+
+# --- normalise text so diffs stay clean across machines ---
+*.html          text eol=lf
+*.css           text eol=lf
+*.js            text eol=lf
+*.mjs           text eol=lf
+*.json          text eol=lf
+*.md            text eol=lf
+*.xml           text eol=lf
+*.yml           text eol=lf
+_headers        text eol=lf
+_redirects      text eol=lf
+
+# Keep vendored Three.js out of diffs and language stats — it is not your code.
+js/vendor/**    linguist-vendored
