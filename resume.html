@@ -30,7 +30,7 @@
     // ----- read the query string -----
     const params   = new URLSearchParams(window.location.search);
     const srcParam = params.get('src');          // "single" | "double" | null
-    const src      = (srcParam === 'double') ? 'double' : 'single';
+    const src      = (srcParam === 'single') ? 'single' : 'double';
 
     // ----- pick the correct PDF -----
     const pdfUrl = src === 'double'
