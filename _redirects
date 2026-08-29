@@ -2,6 +2,7 @@
 # Cloudflare Pages — redirect rules
 # ----------------------------------------------------------------------------
 # Parsed by Cloudflare Pages; NOT served as a static asset.
+#
 # Syntax:  <from>  <to>  [status]
 #   · one rule per line, max 2100 rules
 #   · splats (*) and :placeholders are supported
@@ -22,7 +23,6 @@
 # --- convenience aliases ----------------------------------------------------
 # Short paths that are easy to say out loud in an interview or type from a
 # business card.
-/resume                  /resume.html                    301
 /cv                      /resume.html                    301
 /work                    /index.html#projects            301
 /projects                /index.html#projects            301
