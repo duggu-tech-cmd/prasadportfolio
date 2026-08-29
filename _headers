@@ -1,0 +1,147 @@
+# ============================================================================
+# Cloudflare Pages — custom response headers
+# ----------------------------------------------------------------------------
+# This file is parsed by Cloudflare Pages and is NOT served as a static asset.
+#
+# IMPORTANT SYNTAX RULES (getting these wrong fails SILENTLY):
+#   • Only ONE "*" splat is allowed per URL pattern.
+#     /assets/games/*/Build/*.wasm.br   <- INVALID, two splats
+#     /assets/games/unity-game/Build/*  <- valid, one splat
+#   • Header lines must be indented under the path.
+#   • Max 100 rules, max 2000 characters per line.
+#   • When several rules match one request, ALL their headers apply and the
+#     LAST matching rule wins for a duplicated header name. Ordering therefore
+#     matters — see the caching section below.
+#
+# Because of the single-splat rule, the game folder names below are written
+# out in full. If you rename a game folder in assets/games/, rename it here
+# too or the headers stop applying.
+# ============================================================================
+
+
+# ----------------------------------------------------------------------------
+# GODOT 4 — SharedArrayBuffer support
+# ----------------------------------------------------------------------------
+# Godot's multi-threaded web export needs cross-origin isolation. These two
+# headers provide it. GitHub Pages cannot send them at all, which is why the
+# threaded Godot export simply does not work there.
+#
+# Scoped to the game folder ONLY. Applying these site-wide would break any
+# third-party embed (the YouTube iframes in project galleries, for example).
+
+/assets/games/godot-game/*
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Embedder-Policy: require-corp
+
+
+# ----------------------------------------------------------------------------
+# SECURITY / MISC  (applies to everything, so it goes first)
+# ----------------------------------------------------------------------------
+
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: geolocation=(), microphone=(), camera=()
+  X-Frame-Options: SAMEORIGIN
+
+
+# ----------------------------------------------------------------------------
+# CACHING
+# ----------------------------------------------------------------------------
+# Order is deliberate. Broad rules come first, narrower overrides after, since
+# the last matching rule wins for a repeated header name.
+
+# HTML always revalidates so content edits appear immediately after a deploy.
+# Covers index.html, resume.html and every generated case-study page.
+/*.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+# Case-study URLs are directories (/work/<id>/), so they resolve to index.html
+# without the extension matching the rule above. Cover them explicitly.
+/work/*
+  Cache-Control: public, max-age=0, must-revalidate
+
+# Crawler files: cheap, and you want changes picked up promptly.
+/sitemap.xml
+  Cache-Control: public, max-age=3600
+  Content-Type: application/xml; charset=utf-8
+
+/robots.txt
+  Cache-Control: public, max-age=3600
+
+# Site JS must revalidate on EVERY request, exactly like the HTML above.
+#
+# This was previously max-age=600, which is a real bug: the HTML revalidates
+# immediately but the JS did not, so for up to ten minutes after a deploy a
+# browser could pair NEW markup with a CACHED older script. The failure is
+# silent — an element that a new template added simply has no handler attached,
+# no console error, nothing. Debugging that from the symptom is miserable.
+#
+# These files are a few KB and sit behind Cloudflare's edge cache anyway, so
+# revalidating costs a 304 and buys correctness.
+/js/*.js
+  Cache-Control: public, max-age=0, must-revalidate
+
+# Vendored Three.js is version-pinned and never changes -> cache for a year.
+# MUST come after /js/*.js above, or the shorter rule would win.
+/js/vendor/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/css/*
+  Cache-Control: public, max-age=3600, must-revalidate
+
+# Images, fonts and other static media.
+/assets/*
+  Cache-Control: public, max-age=604800
+
+# The resume gets replaced from time to time — do not cache it for a week.
+/assets/resume.pdf
+  Cache-Control: public, max-age=3600, must-revalidate
+  Content-Type: application/pdf
+
+# --- Gzip variants, if you export with Gzip instead of Brotli ---------------
+
+/assets/games/unity-game/Build/*.data.gz
+  Content-Encoding: gzip
+  Content-Type: application/octet-stream
+
+/assets/games/unity-game/Build/*.wasm.gz
+  Content-Encoding: gzip
+  Content-Type: application/wasm
+
+/assets/games/unity-game/Build/*.framework.js.gz
+  Content-Encoding: gzip
+  Content-Type: application/javascript
+
+# --- Uncompressed .wasm: correct MIME enables streaming compilation ---------
+
+/assets/games/unity-game/Build/*.wasm
+  Content-Type: application/wasm
+
+# ----------------------------------------------------------------------------
+# This is the main reason to host on Cloudflare rather than GitHub Pages.
+# Unity ships pre-compressed .br files; the browser only decompresses them if
+# the server advertises Content-Encoding. GitHub Pages cannot do this, so it
+# forces you to export uncompressed (~3x larger). Cloudflare can.
+#
+# Unity export settings to match this:
+#   Player Settings -> Publishing Settings -> Compression Format: Brotli
+#   Decompression Fallback: OFF
+#
+# Folder assumed: assets/games/unity-game/
+
+/assets/games/unity-game/Build/*.data.br
+  Content-Encoding: br
+  Content-Type: application/octet-stream
+
+/assets/games/unity-game/Build/*.wasm.br
+  Content-Encoding: br
+  Content-Type: application/wasm
+
+/assets/games/unity-game/Build/*.framework.js.br
+  Content-Encoding: br
+  Content-Type: application/javascript
+
+/assets/games/unity-game/Build/*.symbols.json.br
+  Content-Encoding: br
+  Content-Type: application/octet-stream

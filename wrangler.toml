@@ -1,0 +1,9 @@
+name = "prasad-hegde-gamesdev-pro"
+main = "src/worker.js"
+compatibility_date = "2026-08-23"
+
+# Optional: if you want to bind to a specific account
+# account_id = "your-account-id"
+
+[vars]
+# You can add environment variables here if needed

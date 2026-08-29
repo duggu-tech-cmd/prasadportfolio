@@ -1,0 +1,35 @@
+# ============================================================================
+# Cloudflare Pages — redirect rules
+# ----------------------------------------------------------------------------
+# Parsed by Cloudflare Pages; NOT served as a static asset.
+# Syntax:  <from>  <to>  [status]
+#   · one rule per line, max 2100 rules
+#   · splats (*) and :placeholders are supported
+#   · default status is 302; use 301 for permanent moves
+#   · rules are evaluated top to bottom, first match wins
+#   · static files always win over redirects, so these only fire for paths
+#     that do not exist on disk
+# ============================================================================
+
+# --- legacy case-study URLs -------------------------------------------------
+# Case studies moved from project.html?id=<x> to /work/<x>/ so each one has a
+# real, indexable URL with its own title and share card. project.html itself
+# still exists as a JS redirect (it needs to read the ?id= query string, which
+# Pages redirects cannot match on), so this is only a safety net for anyone who
+# hand-trims the query.
+/project                 /index.html#projects            301
+
+# --- convenience aliases ----------------------------------------------------
+# Short paths that are easy to say out loud in an interview or type from a
+# business card.
+/resume                  /resume.html                    301
+/cv                      /resume.html                    301
+/work                    /index.html#projects            301
+/projects                /index.html#projects            301
+/contact                 /index.html#contact             301
+/experience              /index.html#experience          301
+/games                   /index.html#games               301
+
+# --- retired GitHub Pages paths ---------------------------------------------
+# If anything was shared while the site was on github.io, keep it working.
+/index                   /                               301

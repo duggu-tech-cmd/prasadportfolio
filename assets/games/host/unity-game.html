@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<meta name="robots" content="noindex">
+<title>Joker's Wild Field</title>
+<style>
+  /* ==========================================================================
+     WHY THIS FILE LIVES HERE AND NOT IN unity-game/
+     --------------------------------------------------------------------------
+     Every Unity WebGL export writes its own index.html into the build folder.
+     Copying an export over assets/games/unity-game/ therefore overwrites any
+     hand-edited page in there — which has already happened twice.
+
+     So the page that the portfolio actually embeds lives OUTSIDE the build
+     folder, one directory up, and only references the build by relative path.
+     Re-export and copy Build/ + StreamingAssets/ as often as you like; this
+     file survives untouched.
+
+     Two things it fixes that Unity's template gets wrong for an embed:
+
+       1. Unity hard-codes the canvas to 1920x1080 with an inline style. In any
+          container narrower than that the canvas is CLIPPED, not scaled — so
+          in fullscreen theater mode you would see the top-left corner of the
+          game with the rest cut off. Here the canvas fills its host and Unity
+          resizes its drawing buffer to match.
+
+       2. It defines window.PortfolioBridge, which is what the .jslib in
+          tools/unity-bridge/ talks to so the game's own Exit button can close
+          the embed.
+     ========================================================================== */
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; border: 0;
+    width: 100%; height: 100%;
+    overflow: hidden;
+    background: #231F20;
+    font-family: 'Rajdhani', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    color: #cfe6f0;
+  }
+  #unity-canvas {
+    display: block;
+    width: 100%; height: 100%;
+    background: #231F20;
+    touch-action: none;      /* stop mobile browsers stealing drags */
+    outline: none;
+  }
+
+  #boot {
+    position: fixed; inset: 0;
+    display: grid; place-content: center; justify-items: center;
+    gap: 16px; padding: 24px;
+    background: #04070a;
+    text-align: center;
+    transition: opacity .45s ease, visibility .45s;
+  }
+  #boot.gone { opacity: 0; visibility: hidden; }
+  #boot .label { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: #7f9aa8; }
+  #boot .track { width: min(300px, 68vw); height: 3px; background: rgba(95,230,255,.12); overflow: hidden; }
+  #boot .fill {
+    height: 100%; width: 0%;
+    background: linear-gradient(90deg, #2b98b5, #5fe6ff);
+    box-shadow: 0 0 12px #5fe6ff;
+    transition: width .25s ease;
+  }
+  #boot .pct { font-family: ui-monospace, Menlo, monospace; font-size: 12px; letter-spacing: 2px; color: #5fe6ff; }
+  #boot .note { font-size: 12.5px; color: #4a6472; max-width: 34ch; line-height: 1.5; }
+
+  #err { position: fixed; inset: 0; display: none; place-content: center; justify-items: center;
+         gap: 12px; padding: 28px; background: #04070a; text-align: center; }
+  #err.show { display: grid; }
+  #err h2 { font-size: 13px; letter-spacing: 3px; text-transform: uppercase; color: #ff3b30; margin: 0; }
+  #err p { margin: 0; font-size: 14px; color: #7f9aa8; max-width: 48ch; line-height: 1.6; }
+  #err code { font-family: ui-monospace, Menlo, monospace; font-size: 11.5px; color: #5fe6ff;
+              background: rgba(95,230,255,.07); border: 1px solid rgba(120,200,230,.16);
+              padding: 3px 7px; display: inline-block; word-break: break-all; }
+</style>
+</head>
+<body>
+
+<canvas id="unity-canvas" tabindex="-1"></canvas>
+
+<div id="boot">
+  <div class="label">Loading Joker's Wild Field</div>
+  <div class="track"><div class="fill" id="fill"></div></div>
+  <div class="pct" id="pct">0%</div>
+  <div class="note">First load fetches about 8 MB. It is cached afterwards.</div>
+</div>
+
+<div id="err">
+  <h2>Build failed to load</h2>
+  <p id="err-msg"></p>
+</div>
+
+<script>
+/* ---- config -------------------------------------------------------------
+   BUILD is the path from THIS file to the export's Build folder. If you rename
+   the game folder or the Unity Product Name (which sets the file stem), these
+   two lines are the only thing to change.                                  */
+const BUILD = '../unity-game/Build';
+const STEM  = 'JWF';
+const STREAMING = '../unity-game/StreamingAssets';
+
+/* ---- bridge: lets the game close its own embed --------------------------
+   From Unity:  PortfolioBridge_Exit();
+   See tools/unity-bridge/ for the .jslib and the C# wrapper.               */
+window.PortfolioBridge = {
+  exit() {
+    try {
+      parent.postMessage({ type: 'portfolio:game-exit' }, '*');
+    } catch (e) {
+      console.warn('[bridge] could not reach parent:', e);
+    }
+  },
+};
+window.ExitGame = () => window.PortfolioBridge.exit();
+
+// A keydown inside an iframe never reaches the parent document, so forward it.
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') window.PortfolioBridge.exit();
+});
+
+/* ---- loader ------------------------------------------------------------- */
+const boot = document.getElementById('boot');
+const fill = document.getElementById('fill');
+const pct  = document.getElementById('pct');
+
+function fail(msg) {
+  boot.classList.add('gone');
+  document.getElementById('err-msg').innerHTML = msg;
+  document.getElementById('err').classList.add('show');
+  console.error('[unity-game]', msg.replace(/<[^>]*>/g, ''));
+}
+
+const config = {
+  // Brotli with no decompression fallback: these point at the .br files
+  // directly and the SERVER must send `Content-Encoding: br`. Handled by
+  // /_headers on Cloudflare and tools/serve.mjs locally.
+  dataUrl:            `${BUILD}/${STEM}.data.br`,
+  frameworkUrl:       `${BUILD}/${STEM}.framework.js.br`,
+  codeUrl:            `${BUILD}/${STEM}.wasm.br`,
+  streamingAssetsUrl: STREAMING,
+  companyName:        'Prasad',
+  productName:        "Joker's Wild Field",
+  productVersion:     '1.0',
+
+  // Cap the backing buffer on high-DPI screens: a 4K WebGL surface costs 4x
+  // the fill rate of 1080p for very little perceived gain in a browser.
+  devicePixelRatio: Math.min(window.devicePixelRatio || 1, 2),
+
+  // Best-effort auto-detect of Application.Quit(). Unity forwards unknown
+  // config keys onto the Emscripten Module, which calls these when the runtime
+  // stops. Ignored by versions that do not forward them — which is why the
+  // .jslib bridge is the reliable path and this is only a bonus.
+  onExit:  () => window.PortfolioBridge.exit(),
+  onAbort: (what) => fail('The runtime aborted: <code>' + String(what) + '</code>'),
+
+  showBanner: (msg, type) => {
+    if (type === 'error') fail(String(msg));
+    else console.warn('[unity-game]', msg);
+  },
+};
+
+/* Check WebGL before pulling 8 MB over the wire. */
+(function () {
+  let gl = null;
+  try {
+    const c = document.createElement('canvas');
+    gl = c.getContext('webgl2') || c.getContext('webgl');
+  } catch (e) { /* noop */ }
+
+  if (!gl) {
+    fail('This browser has WebGL disabled or unavailable, so the build cannot run. ' +
+         'Try Chrome, Edge or Firefox with hardware acceleration enabled.');
+    return;
+  }
+  load();
+})();
+
+function load() {
+  const canvas = document.getElementById('unity-canvas');
+  const script = document.createElement('script');
+  script.src = `${BUILD}/${STEM}.loader.js`;
+
+  script.onerror = () => fail(
+    `Could not load <code>${BUILD}/${STEM}.loader.js</code>. ` +
+    `Check the path at the top of this file matches where the build actually is.`
+  );
+
+  script.onload = () => {
+    if (typeof createUnityInstance !== 'function') {
+      return fail('The loader ran but did not define <code>createUnityInstance</code>. ' +
+                  'The build may be from an incompatible Unity version.');
+    }
+
+    createUnityInstance(canvas, config, (p) => {
+      const v = Math.round(p * 100);
+      fill.style.width = v + '%';
+      pct.textContent = v + '%';
+    }).then((instance) => {
+      boot.classList.add('gone');
+      window.unityInstance = instance;     // handy from the console
+
+      // Keyboard input only reaches the game while the canvas has focus, and
+      // inside an iframe it does not get focus on its own.
+      canvas.focus();
+      canvas.addEventListener('pointerdown', () => canvas.focus());
+    }).catch((e) => {
+      const m = String((e && e.message) || e);
+      if (/magic|Wasm|compile|decode|corrupt|expected/i.test(m)) {
+        fail('The build downloaded but could not be decoded. This almost always means the ' +
+             'server is not sending <code>Content-Encoding: br</code> for the Brotli files. ' +
+             'Serve locally with <code>node tools/serve.mjs</code> — not ' +
+             '<code>python -m http.server</code>, which cannot send it.');
+      } else {
+        fail(m);
+      }
+    });
+  };
+
+  document.body.appendChild(script);
+}
+</script>
+
+</body>
+</html>

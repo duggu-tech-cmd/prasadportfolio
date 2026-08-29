@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#04070a">
+<meta name="robots" content="noindex, follow">
+<title>404 — Off Route | Prasad Hegde</title>
+<meta name="description" content="Page not found.">
+
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" media="print" onload="this.media='all';this.onload=null"
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@400;600&display=swap">
+<link rel="stylesheet" href="/css/style.css">
+<style>
+  /* Self-contained so this page renders correctly even if style.css 404s too. */
+  .e-wrap {
+    min-height: 100svh;
+    display: grid;
+    place-items: center;
+    text-align: center;
+    padding: 40px 20px;
+    position: relative;
+    z-index: 10;
+  }
+  .e-num {
+    font-family: var(--f-display, sans-serif);
+    font-size: clamp(70px, 17vw, 150px);
+    font-weight: 900;
+    line-height: 1;
+    color: transparent;
+    -webkit-text-stroke: 2px #5fe6ff;
+    text-shadow: 0 0 34px rgba(95, 230, 255, 0.4);
+    letter-spacing: 2px;
+    margin: 0;
+  }
+  .e-sub {
+    color: #7f9aa8;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    font-size: 12px;
+    font-family: var(--f-display, sans-serif);
+    margin: 16px 0 34px;
+  }
+  .e-links { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+</style>
+</head>
+
+<body>
+<div class="bg-grid" aria-hidden="true"></div>
+<div class="bg-vignette" aria-hidden="true"></div>
+
+<main class="e-wrap">
+  <div>
+    <h1 class="e-num">404</h1>
+    <p class="e-sub">Off Route — Rev Limiter Engaged</p>
+    <!-- A 404 is a chance to route someone somewhere useful, not a dead end. -->
+    <nav class="e-links" aria-label="Recovery links">
+      <a class="btn btn-primary" href="/">Return to Start Line</a>
+      <a class="btn" href="/resume.html">Resume</a>
+      <a class="btn" href="/#projects">Selected Work</a>
+      <a class="btn" href="/#contact">Contact</a>
+    </nav>
+  </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,6 @@
+# Prasad Hegde — portfolio
+User-agent: *
+Allow: /
+Disallow: /tools/
+
+Sitemap: https://prasad-hegde-gamesdev.pages.dev/sitemap.xml

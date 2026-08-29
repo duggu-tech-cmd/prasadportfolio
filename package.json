@@ -1,0 +1,17 @@
+{
+  "name": "prasad-hegde-gamesdev-pro",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Portfolio built as a real-time WebGL instrument cluster. Vanilla HTML/CSS/ES modules + vendored Three.js.",
+  "type": "module",
+  "//": "There are NO dependencies and there is nothing to install. This file exists for exactly one reason: it sets \"type\": \"module\" so Node reads js/*.js as ES modules, which lets tools/prerender.mjs import the same render code the browser uses. `npm install` is never required.",
+  "scripts": {
+    "build": "node tools/prerender.mjs",
+    "check": "node tools/prerender.mjs --check",
+    "serve": "node tools/serve.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT"
+}
