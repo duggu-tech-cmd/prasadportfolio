@@ -1341,8 +1341,13 @@ footer p {
    ========================================================================== */
 .games-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 22px;
+}
+@media (max-width: 480px) {
+  .games-grid {
+    grid-template-columns: 1fr;
+  }
 }
 .game-card { display: flex; flex-direction: column; }
 
@@ -1374,15 +1379,22 @@ footer p {
 .game-badge.live { color: var(--bg); background: var(--cyan); border-color: var(--cyan); }
 .game-badge.soon { color: var(--text-faint); }
 
-.game-stage {
+/* Game stage: responsive aspect ratio */
+.games-grid .game-stage {
   width: 100%;
   border: 1px solid var(--line);
   background: rgba(4, 8, 12, 0.6);
   overflow: hidden;
   margin-bottom: 16px;
   position: relative;
+  aspect-ratio: 16 / 9;
 }
-.game-stage iframe {
+@media (max-width: 600px) {
+  .games-grid .game-stage {
+    aspect-ratio: 4 / 3;
+  }
+}
+.games-grid .game-stage iframe {
   width: 100%; height: 100%;
   border: 0; display: block;
 }

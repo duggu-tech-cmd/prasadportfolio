@@ -592,7 +592,7 @@ export const DATA = {
   /* ---- 11. EDUCATION ---------------------------------------------------- */
   education: [
     {
-      degree: 'B.E. in Computer Science',
+      degree: 'B.E. in Information Science',
       school: 'Dayananda Sagar Academy of Technology & Management, Bengaluru',
       period: '2019 — 2023',
       from:   '2019',
